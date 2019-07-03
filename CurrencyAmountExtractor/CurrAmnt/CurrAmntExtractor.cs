@@ -9,8 +9,7 @@ using Newtonsoft.Json;
 namespace CurrencyAmountExtractor.CurrAmnt
 {
     /// <summary>
-    ///
-    ///
+    /// 
     /// </summary>
     public class CurrAmntExtractor
     {
@@ -19,10 +18,10 @@ namespace CurrencyAmountExtractor.CurrAmnt
         private Dictionary<string, string> _leetDict;
 
         /// <summary>
-        /// 
+        /// Constructor of CurrAmntExtractor.
         /// </summary>
-        /// <param name="stringToScan"></param>
-        /// <param name="distance"></param>
+        /// <param name="stringToScan">A string to be scaned for detecting currency/amount</param>
+        /// <param name="distance">Maximal admited numer of wrong letters in detected currency/amount</param>
         public CurrAmntExtractor(string stringToScan, int distance)
         {
             if (string.IsNullOrEmpty(stringToScan))
@@ -46,9 +45,9 @@ namespace CurrencyAmountExtractor.CurrAmnt
         }
 
         /// <summary>
-        /// 
+        /// Determines possible values of currency/amount of money indicated in scaned string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns> a list of $(CurrAmntResult) objects.</returns>
         public List<CurrAmntResult> DetectCurrencyAmount()
         {
             List<string> wordRegexes = GetWordRegexes();
@@ -57,9 +56,9 @@ namespace CurrencyAmountExtractor.CurrAmnt
         }
 
         /// <summary>
-        /// 
+        /// Determines possible values of currency/amount of money indicated in scaned string.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>a JSON object with all detected $(CurrAmntResult)s in document</returns>
         public string DetectJSONCurrencyAmount()
         {
             List<CurrAmntResult> currAmntResults = DetectCurrencyAmount();
@@ -142,6 +141,7 @@ namespace CurrencyAmountExtractor.CurrAmnt
                 currency = "$";
             }
 
+            // It is supposed that indicated ammount will have maximum 2 decimals.
             if (value.Substring(value.Length - 3).Contains(".") || value.Substring(value.Length - 3).Contains(","))
             {
                 if (".,".Contains(value.Substring(value.Length - 3)[0].ToString()))
@@ -177,6 +177,30 @@ namespace CurrencyAmountExtractor.CurrAmnt
             return new Tuple<int, float, string>(finalDistance, accuracy, finalValue);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>a tuple that contains 4 values
+        /// <list type="bullet">
+        /// <item>
+        /// <term>distance</term>
+        /// <description>calculated distance</description>
+        /// </item>
+        /// <item>
+        /// <term>newValue</term>
+        /// <description>calculated new value</description>
+        /// </item>
+        /// <item>
+        /// <term>leetLetters</term>
+        /// <description>number of wrong letters from given value that are present in leet dictionary</description>
+        /// </item>
+        /// <item>
+        /// <term>simpleLetters</term>
+        /// <description>number of wrong letters from given value that are present in leet dictionary</description>
+        /// </item>
+        /// </list>
+        /// </returns>
         private Tuple<int, string, int, int> GetAmmCoinsDistanceSupposedValueWrongLetters(string value)
         {
             int distance = 0;
@@ -197,6 +221,7 @@ namespace CurrencyAmountExtractor.CurrAmnt
                     }
                     else
                     {
+                        // If erronated letter is not present in leet dictionary default value will be 0 as the most used digit.
                         newValue += "0";
                         simpleLetters++;
                     }
@@ -209,6 +234,14 @@ namespace CurrencyAmountExtractor.CurrAmnt
             return new Tuple<int, string, int, int>(distance, newValue, leetLetters, simpleLetters);
         }
 
+        /// <summary>
+        /// Calculates accuracy of predicted value in dependence of leet letters and other letters which value is not applied to any rules.
+        /// Possible values are between 0 and 1. The maximal value is 1 in case the number was detected without any errors. 
+        /// </summary>
+        /// <param name="currentValue"></param>
+        /// <param name="leetLettersCount"></param>
+        /// <param name="simpleLettersCount"></param>
+        /// <returns>calculated accuracy of float type</returns>
         private float CalculateAccuracy(string currentValue, int leetLettersCount, int simpleLettersCount)
         {
             return (float)(currentValue.Count() - leetLettersCount * 0.1 - simpleLettersCount * 0.95) / currentValue.Count();
