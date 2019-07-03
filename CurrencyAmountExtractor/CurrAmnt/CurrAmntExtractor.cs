@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace CurrencyAmountExtractor.CurrAmnt
 {
     /// <summary>
-    /// 
+    /// Class with main logic for finding and extracting currency/amount values from a given string.
     /// </summary>
     public class CurrAmntExtractor
     {
